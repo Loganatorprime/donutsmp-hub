@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  passwordHash   String?
+  image          String?
+  discordId     String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  schematics   Schematic[]
+  favorites    Favorite[]
+  portfolio    Portfolio[]
+  tradeOffers  TradeOffer[]
+  shops        Shop[]
+  showcases    Showcase[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Item {
+  symbol     String   @id
+  name       String
+  price      Float
+  change24h  Float
+  volume24h  Float
+  listings   Int
+  stackSize  Int
+  updatedAt  DateTime @updatedAt
+
+  history   PriceHistory[]
+  portfolio Portfolio[]
+  favorites Favorite[]
+}
+
+model PriceHistory {
+  id        Int      @id @default(autoincrement())
+  symbol    String
+  price     Float
+  createdAt DateTime @default(now())
+
+  item Item @relation(fields: [symbol], references: [symbol], onDelete: Cascade)
+
+  @@index([symbol, createdAt])
+}
+
+model Schematic {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  category      String
+  fileName      String
+  fileUrl       String   @default("")
+  previewUrl    String?
+  author        String   @default("Anonymous")
+  blocks        Int      @default(0)
+  sizeX         Int      @default(0)
+  sizeY         Int      @default(0)
+  sizeZ         Int      @default(0)
+  downloads     Int      @default(0)
+  upvotes       Int      @default(0)
+  createdBy     String?
+  createdAt     DateTime @default(now())
+
+  user      User?     @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  favorites Favorite[]
+}
+
+model Favorite {
+  id           String   @id @default(cuid())
+  userId       String
+  itemSymbol   String?
+  schematicId  String?
+  createdAt    DateTime @default(now())
+
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item      Item?      @relation(fields: [itemSymbol], references: [symbol], onDelete: Cascade)
+  schematic Schematic? @relation(fields: [schematicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemSymbol, schematicId])
+}
+
+model Portfolio {
+  id        String   @id @default(cuid())
+  userId    String
+  symbol    String
+  quantity  Float    @default(0)
+  buyPrice  Float
+  addedAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [symbol], references: [symbol], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+}
+
+model TradeOffer {
+  id        String   @id @default(cuid())
+  type      String // 'buy' | 'sell'
+  item      String
+  quantity  Int
+  price     Float // per unit
+  note      String?
+  contact   String
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+model Shop {
+  id          String   @id @default(cuid())
+  name        String
+  owner       String
+  warp        String
+  description String?
+  tags        String // comma-separated, e.g. "farms,redstone"
+  upvotes     Int      @default(0)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+model Showcase {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  owner       String
+  upvotes     Int      @default(0)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+}
