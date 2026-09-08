@@ -4,6 +4,10 @@ import Discord from 'next-auth/providers/discord'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from './db'
 import { verifyPassword } from './password'
+import {
+  displayNameForPubkey,
+  verifyNostrAuthEvent,
+} from './nostr'
 
 const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@donutsmp.gg'
 const DEMO_PASSWORD = process.env.DEMO_PASSWORD || 'donutsmp'
@@ -12,6 +16,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   providers: [
+    Credentials({
+      id: 'nostr',
+      name: 'nostr',
+      credentials: {
+        event: { label: 'Nostr auth event', type: 'text' },
+      },
+      async authorize(credentials) {
+        const verified = verifyNostrAuthEvent(String(credentials?.event ?? ''))
+        if (!verified) return null
+
+        const dbUser = await prisma.user.upsert({
+          where: { nostrPubkey: verified.pubkey },
+          update: {},
+          create: {
+            nostrPubkey: verified.pubkey,
+            name: displayNameForPubkey(verified.pubkey),
+            emailVerified: new Date(),
+          },
+        })
+
+        return {
+          id: dbUser.id,
+          name: dbUser.name,
+          email: dbUser.email,
+          image: dbUser.image,
+        }
+      },
+    }),
     ...(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET
       ? [
           Discord({

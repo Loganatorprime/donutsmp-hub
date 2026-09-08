@@ -10,11 +10,13 @@ datasource db {
 model User {
   id            String         @id @default(cuid())
   name          String?
-  email          String?   @unique
+  email         String?   @unique
   emailVerified  DateTime?
   passwordHash   String?
-  image          String?
+  image         String?
   discordId     String?        @unique
+  nostrPubkey   String?        @unique
+  coins         Float          @default(1000)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -26,6 +28,7 @@ model User {
   tradeOffers  TradeOffer[]
   shops        Shop[]
   showcases    Showcase[]
+  bets         Bet[]
 }
 
 model Account {
@@ -77,6 +80,7 @@ model Item {
   history   PriceHistory[]
   portfolio Portfolio[]
   favorites Favorite[]
+  bets      Bet[]
 }
 
 model PriceHistory {
@@ -179,4 +183,22 @@ model Showcase {
   createdAt   DateTime @default(now())
 
   user User? @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+model Bet {
+  id          String    @id @default(cuid())
+  userId      String
+  symbol      String
+  direction   String // 'up' | 'down'
+  stake       Float
+  entryPrice  Float
+  status      String    @default("open") // open | won | lost | refunded
+  payout      Float     @default(0)
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [symbol], references: [symbol], onDelete: Cascade)
+
+  @@index([status])
 }

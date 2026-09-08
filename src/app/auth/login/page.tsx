@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LoginForm } from './LoginForm'
+import { NostrSignInButton } from '@/components/NostrSignInButton'
 
 export default async function LoginPage() {
   const session = await auth()
@@ -16,6 +17,12 @@ export default async function LoginPage() {
           <CardTitle className="text-2xl">Sign in</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <NostrSignInButton mode="signin" />
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            demo login
+            <span className="h-px flex-1 bg-border" />
+          </div>
           <LoginForm />
           {process.env.DISCORD_CLIENT_ID && (
             <form
