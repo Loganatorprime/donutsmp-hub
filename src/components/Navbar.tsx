@@ -11,6 +11,7 @@ import {
   ArrowLeftRight,
   Store,
   Camera,
+  Dices,
   LogOut,
   LogIn,
 } from 'lucide-react'
@@ -22,6 +23,7 @@ export default async function Navbar() {
     { href: '/prices', label: 'Prices', icon: TrendingUp },
     { href: '/movers', label: 'Movers', icon: TrendingUp },
     { href: '/meta', label: 'Meta', icon: Sprout },
+    { href: '/predictions', label: 'Predict', icon: Dices },
     { href: '/schematics', label: 'Schematics', icon: Boxes },
     { href: '/trades', label: 'Trades', icon: ArrowLeftRight },
     { href: '/shops', label: 'Shops', icon: Store },

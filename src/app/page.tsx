@@ -7,6 +7,7 @@ import {
   ArrowRight,
   BookOpen,
   Boxes,
+  Dices,
   Sprout,
   TrendingUp,
   Wallet,
@@ -28,6 +29,13 @@ const FEATURES = [
     title: 'Market Movers',
     description:
       'Top gainers, losers, and highest-volume items over the last 24 hours.',
+  },
+  {
+    href: '/predictions',
+    icon: Dices,
+    title: 'Predictions',
+    description:
+      'Bet play-money dough on hourly pumps and dumps — correct calls pay 1.95×. Climb the leaderboard.',
   },
   {
     href: '/meta',

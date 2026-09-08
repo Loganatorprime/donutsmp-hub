@@ -1,7 +1,12 @@
 import { prisma } from '@/lib/db'
 import { fetchAllItems } from '@/lib/donutsmp'
+import { resolveOpenBets } from '@/lib/bets'
 
-export async function syncPrices(): Promise<{ upserted: number; snapshots: number }> {
+export async function syncPrices(): Promise<{
+  upserted: number
+  snapshots: number
+  betsResolved: number
+}> {
   const items = await fetchAllItems()
 
   let upserted = 0
@@ -36,5 +41,7 @@ export async function syncPrices(): Promise<{ upserted: number; snapshots: numbe
     snapshots++
   }
 
-  return { upserted, snapshots }
+  const betsResolved = await resolveOpenBets()
+
+  return { upserted, snapshots, betsResolved }
 }
